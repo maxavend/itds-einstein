@@ -1,25 +1,58 @@
-Perfecto, Maxi. Tomé tus reglas y les añadí lo que pediste (icónicos con React-Icons, flujo “MCP ➜ listado de componentes ➜ confirmación ➜ desarrollo por carpeta con README ➜ integración final”, y el criterio de variables Tailwind). Aquí tienes el **.md** listo para copiar.
-
-# Copilot · Figma MCP → React + Tailwind 3.4.17
+# Copilot · Figma MCP → React + Tailwind 3.4.17 (instrucciones finales)
 
 ## Alcance y fuentes de verdad
-
-* **Diseño**: Figma (Variables + Auto Layout) vía **Dev Mode MCP Server**. Consulta el servidor MCP para extraer componentes, variables y layout.
-* **Código**: React + TypeScript + Tailwind **v3.4.17**. Usa utilidades por defecto; **extiende** solo lo necesario (tokens custom).
+- **Diseño:** Figma (Variables + Auto Layout) vía **Dev Mode MCP Server**. El agente debe consultar MCP para extraer **componentes, variables, props de Auto Layout y código sugerido** de la selección.  
+- **Código:** React + TypeScript + Tailwind **v3.4.17**. Usa utilidades por defecto; **extiende** solo lo necesario (tokens de color personalizados). **Importa** `styles/tokens.css` en los estilos globales para que las `var(--*)` existan en runtime.
 
 ---
 
-## Reglas de mapeo de variables (Figma → Tailwind)
+## Política de tokens (Figma → CSS vars → Tailwind)
+1) **Modelo de capas**
+- **Primitivos** en CSS (p. ej. `--primary-50..900`).
+- **Semánticos** en CSS que **referencian** a primitivos (p. ej. `--theme-primary: var(--primary-500)`).
 
-### Colores (custom variables)
+2) **Exposición en Tailwind**  
+- En `tailwind.config.ts` **solo expones semánticos** dentro de `theme.extend.colors`, apuntando a `var(--...)`.  
+- **Regla dura:** Si existe `--theme-primary` en Figma/CSS, la clase debe ser `bg-theme-primary`. Evita nombres confusos tipo `bg-bg-button`.
 
-* Variables **semánticas** de Figma → **CSS Custom Properties** en `styles/tokens.css` (p. ej. `--color-bg-default`, `--color-primary-500`).
-* Exponerlas en `tailwind.config.ts` dentro de `theme.extend.colors` con `var(--...)` para usarlas como `bg-[...]`, `text-[...]`, `border-[...]` o con nombres alias (p. ej. `bg-bg` → `var(--color-bg-default)`). 
+3) **Arbitrarios y política**  
+- Usa valores arbitrarios `[...]` (p. ej. `rounded-[14px]`) **solo como puente temporal**. Si un valor se repite, promuévelo a token y expón en el theme.
 
-**Ejemplo `tailwind.config.ts` (v3.4.17):**
+4) **Importación obligatoria**  
+- **Siempre** importa `styles/tokens.css` en el CSS global.
 
+### `tokens.css` (ejemplo mínimo)
+```css
+:root {
+  /* PRIMITIVOS */
+  --primary-50:  #EAF1FE;
+  --primary-100: #D7E4FD;
+  --primary-200: #B3CBFB;
+  --primary-500: #2F6FEB;
+
+  --neutral-100: #EDEDED;   /* texto/fondo claro */
+  --neutral-900: #0B0B0C;   /* fondo base oscuro */
+  --error-600:   #DC2626;
+
+  /* SEMÁNTICOS (alias → primitivos) */
+  --theme-primary:    var(--primary-500);
+  --theme-hover:      var(--primary-600); /* o crea --primary-700 y apúntalo */
+  /* si usas pressed/focus:
+     --theme-pressed:  var(--primary-600);
+     --theme-focus:    var(--primary-500);
+  */
+
+  --color-bg-default: var(--neutral-900);
+  --color-fg-default: var(--neutral-100);
+  --color-bg-error:   var(--error-600);
+
+  --color-border-soft:   rgba(255, 255, 255, .12);
+  --color-border-softer: rgba(255, 255, 255, .06);
+}
+```
+
+### `tailwind.config.ts` (v3.4.17)
 ```ts
-// tailwind.config.ts
 import type { Config } from 'tailwindcss'
 
 export default {
@@ -27,17 +60,25 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: 'var(--color-bg-default)',
-        primary: {
-          50:  'var(--color-primary-50)',
-          100: 'var(--color-primary-100)',
-          500: 'var(--color-primary-500)',
-          600: 'var(--color-primary-600)',
+        theme: {
+          primary: 'var(--theme-primary)',
+          hover:   'var(--theme-hover)',
+          // pressed: 'var(--theme-pressed)',
+          // focus:   'var(--theme-focus)',
         },
-      },
-      // Ejemplo si necesitas un spacing custom:
-      spacing: {
-        'input': 'var(--spacing-input)', // solo si no existe en Tailwind
+        surface: 'var(--color-bg-default)',
+        fg:      'var(--color-fg-default)',
+        error:   'var(--color-bg-error)',
+        border: {
+          soft:   'var(--color-border-soft)',
+          softer: 'var(--color-border-softer)',
+        },
+        primary: {
+          50:  'var(--primary-50)',
+          100: 'var(--primary-100)',
+          200: 'var(--primary-200)',
+          500: 'var(--primary-500)',
+        },
       },
     },
   },
@@ -45,35 +86,28 @@ export default {
 } satisfies Config
 ```
 
-### Spacing / Tipografía / Radius (NO custom por defecto)
-
-* **Traduce** tokens de Figma a utilidades Tailwind (`p-4`, `px-4`, `py-4`, `gap-4`, `text-sm`, `font-medium`, `rounded-md`, etc.).
-* **Solo extiende** si el token **no existe** en Tailwind (p. ej. `spacing-input`).
-
 ---
 
 ## Layout: Auto Layout (Figma) → Flex/Grid (Tailwind)
+- **Horizontal** → `flex flex-row items-* justify-* gap-*`
+- **Vertical** → `flex flex-col items-* justify-* gap-*`
+- **Grid** → `grid grid-cols-*` cuando existan columnas explícitas.  
+- Respeta padding/gap/margins con utilidades.
 
-* **Horizontal** → `flex flex-row items-* justify-* gap-*`.
-* **Vertical** → `flex flex-col items-* justify-* gap-*`.
-* Usa `grid grid-cols-*` si hay columnas explícitas; respeta padding/gap/margins con utilidades (`min-w-*`, `min-h-*`, `max-w-*` cuando aplique).
+**Regla:** genera **componentes solo para Component Instances**; los frames con Auto Layout se implementan como layout (flex/grid).
 
 ---
 
 ## Reemplazo de íconos (Figma → React-Icons)
-
-* **Regla**: Reemplaza cada ícono de Figma por su equivalente en **React-Icons** (biblioteca estándar de íconos para React).
-* Importa solo los íconos necesarios desde su **pack** (ej. `fa`, `lu`, `io5`, etc.). 
-
-**Ejemplo de uso:**
+- Reemplaza cada ícono de Figma por su equivalente en **React-Icons.**
+- Importa **solo** los íconos necesarios desde react-icons/md (pack Material Design).
 
 ```tsx
-import { FaChevronRight } from 'react-icons/fa'
-
+import { MdChevronRight } from 'react-icons/md'
 export function NextAction() {
   return (
     <button className="inline-flex items-center gap-2">
-      Siguiente <FaChevronRight aria-hidden />
+      Siguiente <MdChevronRight aria-hidden />
     </button>
   )
 }
@@ -82,83 +116,29 @@ export function NextAction() {
 ---
 
 ## Flujo Copilot + MCP (paso a paso)
-
-1. **Análisis (MCP)**: Ejecuta el MCP sobre la **selección** en Figma y devuelve:
-
-   * Variables aplicadas (color/spacing/tipografía/radius) y props de Auto Layout (dirección, gap, padding, alineación).
-   * **Mapa** Figma → Tailwind/CSS vars y **lista de gaps** que requieren `theme.extend` (ej. `spacing-input`).
-2. **Primer output** (obligatorio):
-
-   > “Se mapearon los componentes **A**, **B**, **C**. ¿Comenzamos con **A**?”
-3. **Desarrollo por componente** (confirmado por el usuario):
-
-   * Crea `src/components/[Name]/index.tsx` **desacoplado**, con props tipadas (basadas en las props de Figma) y estilos via Tailwind.
-   * Genera `src/components/[Name]/README.md` con: uso, props, decisiones de mapeo y accesibilidad.
-   * Si falta un token/clase, propone **extensión mínima** en `theme.extend`.
-4. **Itera**: Repite el paso 3 para **B**, **C**, … hasta cubrir toda la selección.
-5. **Integración final**: Pregunta
-
-   > “¿Procedemos a armar la vista seleccionada integrando los componentes ya creados?”
-   > y genera el layout de la selección reutilizando los componentes.
-
----
-
-## Estructura de proyecto (sugerida)
-
-```
-src/
-├─ components/
-│  └─ [ComponentName]/
-│     ├─ index.tsx
-│     ├─ [ComponentName].test.tsx
-│     └─ README.md
-├─ action/        # acciones específicas de dominio
-│  └─ [component-name]/index.tsx
-├─ forms/         # patrones de formularios
-│  └─ [component-name]/index.tsx
-├─ pages/         # páginas o vistas
-│  └─ [component-name]/index.tsx
-├─ hooks/
-├─ lib/
-└─ styles/
-   ├─ globals.css
-   └─ tokens.css   # CSS vars sincronizadas desde Figma
-```
+1) **Análisis (MCP)** sobre la selección → devuelve props, variables, mapeo y gaps.  
+2) **Primer output:** “Se mapearon **A, B, C**. ¿Comenzamos con **A**?”. Usa nombres exactos de Figma.  
+3) **Orden:** primero extiende tokens de color, luego genera el primer componente.  
+4) **Desarrollo:** `src/components/[Name]/index.tsx` con props tipadas, README.md con uso/props/a11y, sin inline si existe utilidad.  
+5) **Itera:** repite para B, C…  
+6) **Integración final:** pregunta si armar la vista completa con componentes ya creados.
 
 ---
 
 ## Reglas de desarrollo
-
-1. Componentes funcionales, **props tipadas** (`Props`) + JSDoc breve; composición > herencia.
-2. **No recrear** componentes ya existentes en tu librería interna; si falta, documenta el gap.
-3. **Accesibilidad**: `aria-*`, roles, foco visible y contraste según tokens.
-4. **Estados**: `hover`, `focus`, `disabled`, `aria-pressed`/`data-*` cuando aplique.
-5. **Sin estilos inline** si existe utilidad Tailwind equivalente.
-
----
-
-## Snippets de prompt (para Copilot/Agente)
-
-**Inicial por componente**
-
-> Ejecuta el MCP en esta **selección**. Devuélveme: 1. variables aplicadas, 2. props de Auto Layout, 3. mapeo Figma→Tailwind/CSS vars, 4. tokens a extender. Luego responde: “Se mapearon **A, B, C**. ¿Comenzamos con **A**?”. Si digo **sí**, genera `src/components/A/index.tsx` (React+TS+Tailwind), reemplaza íconos por **React-Icons** y crea `README.md` con uso/props/a11y. Repite hasta terminar **B, C…**, y al final pregunta si integramos todos en la vista.
-
-**Extender tokens necesarios**
-
-> Si un token no existe en Tailwind, propone la **mínima** extensión en `theme.extend` y úsalo en el componente.
-
-**Chequeo de layout**
-
-> Compara con Auto Layout. Si no coincide (alineación/gaps/padding), sugiere clases alternativas (grid vs flex) sin CSS ad-hoc.
+1) Funcionales + props tipadas (`Props`) con JSDoc.  
+2) No recrear componentes existentes; documenta gaps.  
+3) Accesibilidad: `aria-*`, roles, foco visible (`focus-visible:ring-*`).  
+4) Estados: `hover`, `active`, `disabled`, `aria-pressed`.  
+5) Sin inline si existe utilidad; arbitrarios solo como puente.
 
 ---
 
 ## Ejemplo mínimo
-
 ```tsx
 // src/components/Card/index.tsx
 import { type ReactNode } from 'react'
-import { FaInfoCircle } from 'react-icons/fa' // icono sustituyendo el de Figma
+import { FaInfoCircle } from 'react-icons/fa'
 
 type CardProps = {
   title: string
@@ -168,10 +148,9 @@ type CardProps = {
 
 export default function Card({ title, actions, children }: CardProps) {
   return (
-    <section className="flex flex-col gap-4 p-4 rounded-md bg-bg">
-      {/* bg-bg = var(--color-bg-default) (tokens.css) → mapeado en tailwind.config.ts */}
+    <section className="flex flex-col gap-4 p-4 rounded-md bg-surface">
       <header className="flex items-center justify-between">
-        <h2 className="text-base font-medium inline-flex items-center gap-2">
+        <h2 className="text-base font-medium inline-flex items-center gap-2 text-fg">
           <FaInfoCircle aria-hidden /> {title}
         </h2>
         {actions}
@@ -182,18 +161,15 @@ export default function Card({ title, actions, children }: CardProps) {
 }
 ```
 
-> Nota: `rounded-md` y utilidades equivalentes están disponibles en Tailwind v3.4.\*; usa `rounded-[var(--radius-lg)]` si tu radius es variable.
-
 ---
 
 ## Checklist de aceptación
-
-* [ ] MCP ejecutado sobre la **selección** y mapeo documentado (Figma → Tailwind/CSS vars). ([help.figma.com][1])
-* [ ] Salida inicial: **lista de componentes** detectados y confirmación para empezar.
-* [ ] Componentes **desacoplados**, con props tipadas (desde Figma) y README por carpeta.
-* [ ] **React-Icons** reemplazando íconos de Figma; imports por pack. ([Npm][9])
-* [ ] **Sin** estilos inline si existe utilidad Tailwind. ([tailwindcss.com][6])
-* [ ] Extensiones en `theme.extend` **mínimas y justificadas** (p. ej. `spacing-input`).
-* [ ] Layout fiel al Auto Layout (dirección, gap, padding, alignment).
-* [ ] Tokens de color vía **CSS vars** y utilidades Tailwind. ([figma2wp.com][4])
-* [ ] Test visual o story básico.
+- [ ] MCP ejecutado y mapeo documentado.  
+- [ ] Salida inicial con nombres exactos.  
+- [ ] Componentes desacoplados + README.  
+- [ ] React-Icons reemplazando íconos.  
+- [ ] Sin estilos inline si existe utilidad.  
+- [ ] Extensiones en `theme.extend.colors` mínimas y justificadas.  
+- [ ] Layout fiel a Auto Layout.  
+- [ ] Tipografía importada y configurada en Tailwind.  
+- [ ] Foco visible y estados presentes.
