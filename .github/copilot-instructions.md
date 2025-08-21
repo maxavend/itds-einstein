@@ -116,6 +116,8 @@ src/
 │  └─ [component-name]/index.tsx
 ├─ forms/         # patrones de formularios
 │  └─ [component-name]/index.tsx
+├─ pages/         # páginas o vistas
+│  └─ [component-name]/index.tsx
 ├─ hooks/
 ├─ lib/
 └─ styles/
@@ -195,4 +197,3 @@ export default function Card({ title, actions, children }: CardProps) {
 * [ ] Layout fiel al Auto Layout (dirección, gap, padding, alignment).
 * [ ] Tokens de color vía **CSS vars** y utilidades Tailwind. ([figma2wp.com][4])
 * [ ] Test visual o story básico.
-
