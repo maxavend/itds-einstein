@@ -49,8 +49,11 @@ export default {
 * Spacing, radius, tipografía, etc. ⇒ **usa utilidades core** de Tailwind.
 * Mapea tokens de Figma a utilidades por nombre y valor.
 
-  * Ej.: `spacing-4 (1rem)` ⇒ `p-4`, `px-4`, `gap-4`.
-  * Ej.: `rounded-sm (4px)` ⇒ `rounded-sm`, `rounded-[4px]`
+  * Ej.: `spacing-4 (1rem)` ⇒ `p-4`, `px-4`, `gap-4`, etc.
+  * Ej.: `rounded-sm (4px)` ⇒ `rounded-sm`, `rounded-t-sm`, etc.
+  * Ej.: `font-size-16 (1rem)` ⇒ `text-base`.
+
+  * Nota: el `line-height` en Figma suele estar personalizado por componente; respeta el valor de Figma y expónlo como token (por ejemplo `--line-height-500`) en `styles/tokens.css` y/o aplícalo con utilidades Tailwind (`leading-[20px]` o `leading-500`) para mantener la tipografía fiel al diseño.
 
 ## 4 Layout (Auto Layout - Tailwind)
 
