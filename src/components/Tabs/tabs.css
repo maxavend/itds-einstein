@@ -1,0 +1,12 @@
+/* Utilities específicas para Tabs: ocultar scrollbar manteniendo scroll táctil */
+.tabs-scroll-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.tabs-scroll-hide::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+.tabs-overflow-visible {
+  overflow: visible !important;
+}
