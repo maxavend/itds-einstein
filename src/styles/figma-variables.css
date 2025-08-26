@@ -1,0 +1,39 @@
+/* Auto-generated from Figma MCP - grouping: primitives, semantic, components */
+:root {
+  /* Primitives */
+  --family-font: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  --spacing-0: 0px;
+  --spacing-4: 16px; /* Figma: 16 */
+  --spacing-6: 24px; /* Figma: 24 */
+  --screen-soft: #f5f5f5; /* primitive used for surfaces */
+
+  /* Semantic colors (exposed to Tailwind via var(--...)) */
+  --color-neutral-default: #444444;
+  --color-neutral-high: #000000;
+  --color-theme-primary: #000000;
+
+  /* Additional semantic tokens detected in selection */
+  --color-bg-default: #ffffff;
+  --color-border-default: #d6d6d6;
+  --color-neutral-medium: #585858;
+  --color-accent-soft: #cefde7;
+
+  /* Component-level tokens (examples from selection) */
+  --fill-0: #2563EB; /* used for many icons in the selection */
+  --stroke-0: #DF0F20;
+
+  /* radii */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+}
+
+/* Component groups (example names) */
+.cmp-icon-button { --cmp-icon-button-radius: 8px; }
+.cmp-avatar { --cmp-avatar-size-m: 30px; }
+
+/* Typography helpers (mapped from Figma variables) */
+.type-base { font-family: var(--family-font); }
+
+/* Utility examples for runtime usage (prefer Tailwind classes in components) */
+.bg-screen-soft { background-color: var(--screen-soft); }

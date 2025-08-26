@@ -1,3 +1,6 @@
+/* Figma tokens (must be loaded before Tailwind utilities reference vars) */
+@import './styles/figma-variables.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
